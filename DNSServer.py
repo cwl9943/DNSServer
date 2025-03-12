@@ -58,18 +58,10 @@ dns_records = {
             2023081401, 3600, 1800, 604800, 86400
         ),
     },
-    'safebank.com.': {
-        dns.rdatatype.A: '192.168.1.102'
-    },
-    'google.com.': {
-        dns.rdatatype.A: '192.168.1.103'
-    },
-    'legitsite.com.': {
-        dns.rdatatype.A: '192.168.1.104'
-    },
-    'yahoo.com.': {
-        dns.rdatatype.A: '192.168.1.105'
-    },
+    'safebank.com.': {dns.rdatatype.A: '192.168.1.102'},
+    'google.com.': {dns.rdatatype.A: '192.168.1.103'},
+    'legitsite.com.': {dns.rdatatype.A: '192.168.1.104'},
+    'yahoo.com.': {dns.rdatatype.A: '192.168.1.105'},
     'nyu.edu.': {
         dns.rdatatype.A: '192.168.1.106',
         dns.rdatatype.TXT: (encrypted_value.decode(),),
@@ -110,24 +102,23 @@ def run_dns_server():
                         if isinstance(answer_data, (str, bytes)):
                             rdata_list.append(dns.rdata.from_text(dns.rdataclass.IN, qtype, str(answer_data)))
                         else:
-                            for data in answer_data:
-                                rdata_list.append(dns.rdata.from_text(dns.rdataclass.IN, qtype, str(data)))
+                            for item in answer_data:
+                                rdata_list.append(dns.rdata.from_text(dns.rdataclass.IN, qtype, str(item)))
 
-                    # Create a single RRset for all rdata entries
+                    # Single RRset for all records of this type
                     if rdata_list:
                         rrset = dns.rrset.RRset(question.name, dns.rdataclass.IN, qtype)
                         for rdata in rdata_list:
                             rrset.add(rdata)
                         response.answer.append(rrset)
 
-                # Set authoritative answer flag
                 response.flags |= dns.flags.AA
 
             print(f"Responding to request: {qname}")
             server_socket.sendto(response.to_wire(), addr)
             
         except KeyboardInterrupt:
-            print('\nShutting down...')
+            print('\nExiting...')
             server_socket.close()
             sys.exit(0)
 
