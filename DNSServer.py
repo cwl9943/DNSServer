@@ -30,14 +30,14 @@ def generate_aes_key(password, salt):
 def encrypt_with_aes(input_string, password, salt):
     key = generate_aes_key(password, salt)
     f = Fernet(key)
-    encrypted_data = f.encrypt(input_string.encode('utf-8'))
-    return base64.b64encode(encrypted_data).decode('utf-8')
+    encrypted_bytes = f.encrypt(input_string.encode('utf-8'))
+    return base64.b64encode(encrypted_bytes).decode('utf-8')
 
 def decrypt_with_aes(encrypted_b64, password, salt):
     key = generate_aes_key(password, salt)
     f = Fernet(key)
-    encrypted_data = base64.b64decode(encrypted_b64)
-    return f.decrypt(encrypted_data).decode('utf-8')
+    encrypted_bytes = base64.b64decode(encrypted_b64)
+    return f.decrypt(encrypted_bytes).decode('utf-8')
 
 # Encryption parameters
 salt = b'Tandon'
@@ -47,33 +47,13 @@ encrypted_value = encrypt_with_aes(input_string, password, salt)
 
 # DNS records configuration
 dns_records = {
-    'example.com.': {
-        dns.rdatatype.A: '192.168.1.101',
-        dns.rdatatype.AAAA: '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
-        dns.rdatatype.MX: [(10, 'mail.example.com.')],
-        dns.rdatatype.CNAME: 'www.example.com.',
-        dns.rdatatype.NS: 'ns.example.com.',
-        dns.rdatatype.TXT: ('This is a TXT record',),
-        dns.rdatatype.SOA: (
-            'ns1.example.com.', 'admin.example.com.',
-            2023081401, 3600, 1800, 604800, 86400
-        ),
-    },
-    'safebank.com.': {
-        dns.rdatatype.A: '192.168.1.102'
-    },
-    'google.com.': {
-        dns.rdatatype.A: '192.168.1.103'
-    },
-    'legitsite.com.': {
-        dns.rdatatype.A: '192.168.1.104'
-    },
-    'yahoo.com.': {
-        dns.rdatatype.A: '192.168.1.105'
-    },
+    'safebank.com.': {dns.rdatatype.A: '192.168.1.102'},
+    'google.com.': {dns.rdatatype.A: '192.168.1.103'},
+    'legitsite.com.': {dns.rdatatype.A: '192.168.1.104'},
+    'yahoo.com.': {dns.rdatatype.A: '192.168.1.105'},
     'nyu.edu.': {
         dns.rdatatype.A: '192.168.1.106',
-        dns.rdatatype.TXT: (encrypted_value,),
+        dns.rdatatype.TXT: (encrypted_value,),  # Store Base64 string directly
         dns.rdatatype.MX: [(10, 'mxa-00256a01.gslb.pphosted.com.')],
         dns.rdatatype.AAAA: '2001:0db8:85a3:0000:0000:8a2e:0373:7312',
         dns.rdatatype.NS: 'ns1.nyu.edu.'
@@ -114,7 +94,7 @@ def run_dns_server():
                             for item in answer_data:
                                 rdata_list.append(dns.rdata.from_text(dns.rdataclass.IN, qtype, str(item)))
 
-                    # Create a single RRset for all records
+                    # Add all records to response
                     if rdata_list:
                         rrset = dns.rrset.RRset(question.name, dns.rdataclass.IN, qtype)
                         for rdata in rdata_list:
@@ -127,7 +107,7 @@ def run_dns_server():
             server_socket.sendto(response.to_wire(), addr)
             
         except KeyboardInterrupt:
-            print('\nExiting...')
+            print('\nShutting down...')
             server_socket.close()
             sys.exit(0)
 
