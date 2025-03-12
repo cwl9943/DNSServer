@@ -31,15 +31,13 @@ def encrypt_with_aes(input_string, password, salt):
     key = generate_aes_key(password, salt)
     f = Fernet(key)
     encrypted_data = f.encrypt(input_string.encode('utf-8'))
-    return base64.b64encode(encrypted_data).decode('utf-8')  # Base64 encode
+    return encrypted_data.decode('utf-8')
 
-def decrypt_with_aes(encrypted_b64, password, salt):
+def decrypt_with_aes(encrypted_str, password, salt):
     key = generate_aes_key(password, salt)
     f = Fernet(key)
-    encrypted_data = base64.b64decode(encrypted_b64)  # Base64 decode
-    return f.decrypt(encrypted_data).decode('utf-8')
+    return f.decrypt(encrypted_str.encode('utf-8')).decode('utf-8')
 
-# Configuration
 salt = b'Tandon'
 password = 'cwl9943@nyu.edu'
 input_string = 'AlwaysWatching'
@@ -90,7 +88,6 @@ def run_dns_server():
                     answer_data = dns_records[qname][qtype]
                     rdata_list = []
 
-                    # Handle different record types
                     if qtype == dns.rdatatype.MX:
                         for pref, server in answer_data:
                             rdata_list.append(MX(dns.rdataclass.IN, dns.rdatatype.MX, pref, server))
@@ -106,7 +103,6 @@ def run_dns_server():
                             for item in answer_data:
                                 rdata_list.append(dns.rdata.from_text(dns.rdataclass.IN, qtype, str(item)))
 
-                    # Add all records to response
                     if rdata_list:
                         rrset = dns.rrset.RRset(question.name, dns.rdataclass.IN, qtype)
                         for rdata in rdata_list:
