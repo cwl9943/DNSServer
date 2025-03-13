@@ -39,8 +39,8 @@ def decrypt_with_aes(encrypted_str, password, salt):
     return f.decrypt(encrypted_str.encode('utf-8')).decode('utf-8')
 
 salt = b'Tandon'
-password = 'cwl9943@nyu.edu'
-input_string = 'AlwaysWatching'
+password = b'cwl9943@nyu.edu'
+input_string = b'AlwaysWatching'
 encrypted_value = encrypt_with_aes(input_string, password, salt)
 
 dns_records = {
